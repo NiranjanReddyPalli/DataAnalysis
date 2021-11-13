@@ -1,0 +1,285 @@
+
+IPL Data Analysis (2008-2016) using MySQL
+
+
+source of Data: https://github.com/12345k/IPL-Dataset
+
+Analysis:
+
+
+{1} Table Schema information using DESC command:
+
+	-> show databases;
+
+	-> use ipl;
+
+	-> show tables;
+
+	-> desc matches;
+
+
++-----------------+------+------+-----+---------+-------+
+| Field           | Type | Null | Key | Default | Extra |
++-----------------+------+------+-----+---------+-------+
+| id              | int  | YES  |     | NULL    |       |
+| season          | int  | YES  |     | NULL    |       |
+| city            | text | YES  |     | NULL    |       |
+| date            | text | YES  |     | NULL    |       |
+| team1           | text | YES  |     | NULL    |       |
+| team2           | text | YES  |     | NULL    |       |
+| toss_winner     | text | YES  |     | NULL    |       |
+| toss_decision   | text | YES  |     | NULL    |       |
+| result          | text | YES  |     | NULL    |       |
+| dl_applied      | int  | YES  |     | NULL    |       |
+| winner          | text | YES  |     | NULL    |       |
+| win_by_runs     | int  | YES  |     | NULL    |       |
+| win_by_wickets  | int  | YES  |     | NULL    |       |
+| player_of_match | text | YES  |     | NULL    |       |
+| venue           | text | YES  |     | NULL    |       |
+| umpire1         | text | YES  |     | NULL    |       |
+| umpire2         | text | YES  |     | NULL    |       |
+| umpire3         | text | YES  |     | NULL    |       |
++-----------------+------+------+-----+---------+-------+ 
+
+
+
+{2} Sample records to get idea of data present in the table matches:
+
+	mysql> select * from matches
+	    -> limit 5;
+
++------+--------+------------+------------+-----------------------+-----------------------------+-----------------------------+---------------+--------+------------+-----------------------------+-------------+----------------+-----------------+--------------------------------------------+-----------+----------------+---------+
+| id   | season | city       | date       | team1                 | team2                       | toss_winner                 | toss_decision | result | dl_applied | winner                      | win_by_runs | win_by_wickets | player_of_match | venue                                      | umpire1   | umpire2        | umpire3 |
++------+--------+------------+------------+-----------------------+-----------------------------+-----------------------------+---------------+--------+------------+-----------------------------+-------------+----------------+-----------------+--------------------------------------------+-----------+----------------+---------+
+|    1 |   2008 | Bangalore  | 2008-04-18 | Kolkata Knight Riders | Royal Challengers Bangalore | Royal Challengers Bangalore | field         | normal |          0 | Kolkata Knight Riders       |         140 |              0 | BB McCullum     | M Chinnaswamy Stadium                      | Asad Rauf | RE Koertzen    |         |
+|    2 |   2008 | Chandigarh | 2008-04-19 | Chennai Super Kings   | Kings XI Punjab             | Chennai Super Kings         | bat           | normal |          0 | Chennai Super Kings         |          33 |              0 | MEK Hussey      | Punjab Cricket Association Stadium, Mohali | MR Benson | SL Shastri     |         |
+|    3 |   2008 | Delhi      | 2008-04-19 | Rajasthan Royals      | Delhi Daredevils            | Rajasthan Royals            | bat           | normal |          0 | Delhi Daredevils            |           0 |              9 | MF Maharoof     | Feroz Shah Kotla                           | Aleem Dar | GA Pratapkumar |         |
+|    4 |   2008 | Mumbai     | 2008-04-20 | Mumbai Indians        | Royal Challengers Bangalore | Mumbai Indians              | bat           | normal |          0 | Royal Challengers Bangalore |           0 |              5 | MV Boucher      | Wankhede Stadium                           | SJ Davis  | DJ Harper      |         |
+|    5 |   2008 | Kolkata    | 2008-04-20 | Deccan Chargers       | Kolkata Knight Riders       | Deccan Chargers             | bat           | normal |          0 | Kolkata Knight Riders       |           0 |              5 | DJ Hussey       | Eden Gardens                               | BF Bowden | K Hariharan    |         |
++------+--------+------------+------------+-----------------------+-----------------------------+-----------------------------+---------------+--------+------------+-----------------------------+-------------+----------------+-----------------+--------------------------------------------+-----------+----------------+---------+
+
+
+{3} Total records in matches table:
+
+	 mysql> select count(id) as total_records from matches;
+
++-------------+
+|total_records|
++-------------+
+|       577   |
++-------------+
+
+{4} Number of matches played in each season:
+
+	 mysql> select season, count(id) as no_of_matches from matches
+		group by season;
+
++--------+---------------+
+| season | no_of_matches |
++--------+---------------+
+|   2008 |            58 |
+|   2009 |            57 |
+|   2010 |            60 |
+|   2011 |            73 |
+|   2012 |            74 |
+|   2013 |            76 |
+|   2014 |            60 |
+|   2015 |            59 |
+|   2016 |            60 |
++--------+---------------+
+
+{5} a)Team won Batting first: 
+
+	mysql> select count(id) as Team_won_Batting_First FROM matches 
+	       WHERE win_by_runs>0;
+
++------------------------+
+| Team_won_Batting_First |
++------------------------+
+|                    261 |
++------------------------+
+
+    b)Team Won Batting Second:
+
+	mysql> select count(id) as Team_won_Batting_Second FROM matches 
+	       WHERE win_by_wickets>0;
+
++-------------------------+
+| Team_won_Batting_Second |
++-------------------------+
+|                     307 |
++-------------------------+
+
+    c)Tied Matches (No Result):
+
+	mysql> select count(id) as No_Result FROM matches 
+	       WHERE win_by_wickets=0 AND win_by_runs=0;
+
++-----------+
+| No_Result |
++-----------+
+|         9 |
++-----------+
+
+{6} Tied match details:
+
+	mysql> select id, season, date, team1, team2, result, city, venue  from matches
+	       where result = 'tie' or result = 'no result';
+
++------+--------+------------+-----------------------------+-----------------------------+-----------+-----------+-------------------------------------------+
+| id   | season | date       | team1                       | team2                       | result    | city      | venue                                     |
++------+--------+------------+-----------------------------+-----------------------------+-----------+-----------+-------------------------------------------+
+|   67 |   2009 | 2009-04-23 | Rajasthan Royals            | Kolkata Knight Riders       | tie       | Cape Town | Newlands                                  |
+|  131 |   2010 | 2010-03-21 | Kings XI Punjab             | Chennai Super Kings         | tie       | Chennai   | MA Chidambaram Stadium, Chepauk           |
+|  242 |   2011 | 2011-05-21 | Delhi Daredevils            | Pune Warriors               | no result | Delhi     | Feroz Shah Kotla                          |
+|  329 |   2013 | 2013-04-07 | Royal Challengers Bangalore | Sunrisers Hyderabad         | tie       | Hyderabad | Rajiv Gandhi International Stadium, Uppal |
+|  342 |   2013 | 2013-04-16 | Delhi Daredevils            | Royal Challengers Bangalore | tie       | Bangalore | M Chinnaswamy Stadium                     |
+|  417 |   2014 | 2014-04-29 | Rajasthan Royals            | Kolkata Knight Riders       | tie       | Abu Dhabi | Sheikh Zayed Stadium                      |
+|  477 |   2015 | 2015-04-21 | Rajasthan Royals            | Kings XI Punjab             | tie       | Ahmedabad | Sardar Patel Stadium, Motera              |
+|  487 |   2015 | 2015-04-29 | Royal Challengers Bangalore | Rajasthan Royals            | no result | Bangalore | M Chinnaswamy Stadium                     |
+|  512 |   2015 | 2015-05-17 | Delhi Daredevils            | Royal Challengers Bangalore | no result | Bangalore | M Chinnaswamy Stadium                     |
++------+--------+------------+-----------------------------+-----------------------------+-----------+-----------+-------------------------------------------+
+
+{7} Most successful team - Team which won most number of matches:
+
+	mysql> select winner, count(winner) as no_of_matches_won from matches 
+	       group by winner 
+	       order by count(winner) desc;
+
++-----------------------------+-------------------+
+| winner                      | no_of_matches_won |
++-----------------------------+-------------------+
+| Mumbai Indians              |                80 |
+| Chennai Super Kings         |                79 |
+| Royal Challengers Bangalore |                70 |
+| Kolkata Knight Riders       |                68 |
+| Rajasthan Royals            |                63 |
+| Kings XI Punjab             |                63 |
+| Delhi Daredevils            |                56 |
+| Sunrisers Hyderabad         |                34 |
+| Deccan Chargers             |                29 |
+| Pune Warriors               |                12 |
+| Gujarat Lions               |                 9 |
+| Kochi Tuskers Kerala        |                 6 |
+| Rising Pune Supergiants     |                 5 |
++-----------------------------+-------------------+
+
+{8} Total matches played by each team:
+
+Definition of matches played : Teams playing a match can be in both the columns team1 and team2. Hence we are counting the the no.of matches played by each team seperately and combining them by using union all.
+
+	mysql> select t.team1 as team, sum(total) as total_matches_played
+	       from (
+	       select team1, count(team1) as total from matches group by team1
+	       union all 
+	       select team2, count(team2) as total from matches group by team2) as t 
+	       group by team 
+	       order by total_matches_played desc;
+
++-----------------------------+----------------------+
+| team                        | total_matches_played |
++-----------------------------+----------------------+
+| Mumbai Indians              |                  140 |
+| Royal Challengers Bangalore |                  139 |
+| Kings XI Punjab             |                  134 |
+| Delhi Daredevils            |                  133 |
+| Kolkata Knight Riders       |                  132 |
+| Chennai Super Kings         |                  131 |
+| Rajasthan Royals            |                  118 |
+| Deccan Chargers             |                   75 |
+| Sunrisers Hyderabad         |                   62 |
+| Pune Warriors               |                   46 |
+| Gujarat Lions               |                   16 |
+| Kochi Tuskers Kerala        |                   14 |
+| Rising Pune Supergiants     |                   14 |
++-----------------------------+----------------------+
+
+{9}  Count of no.of times each team winning the toss:
+
+	mysql> select team1 as team, count(toss_winner) as no_of_toss_wins from matches 
+	       group by toss_winner
+	       order by no_of_toss_wins desc;
+
++-------------------------+-----------------+
+| team                    | no_of_toss_wins |
++-------------------------+-----------------+
+| Mumbai Indians          |              74 |
+| Kolkata Knight Riders   |              69 |
+| Chennai Super Kings     |              66 |
+| Kings XI Punjab         |              64 |
+| Delhi Daredevils        |              64 |
+| Rajasthan Royals        |              63 |
+| Kolkata Knight Riders   |              61 |
+| Deccan Chargers         |              43 |
+| Sunrisers Hyderabad     |              30 |
+| Pune Warriors           |              20 |
+| Kochi Tuskers Kerala    |               8 |
+| Kings XI Punjab         |               8 |
+| Rising Pune Supergiants |               7 |
++-------------------------+-----------------+
+
+
+{10}  Toss winning percentage (TWP)
+
+	 mysql> select tm.team, tm.no_of_matches_played, tc.toss_count, (tc.toss_count/tm.no_of_matches_played)*100 as TWP 
+			from (
+				select t.team1 as team, sum(total) as no_of_matches_played 
+					from (
+						select team1, count(team1) as total from matches 
+						group by team1
+						union all
+						select team2, count(team2) as total from matches 
+						group by team2) as t
+					group by team) as tm
+			inner join 
+				(select toss_winner, count(toss_winner) as toss_count 
+					from matches 
+					group by toss_winner) as tc
+			on tm.team = tc.toss_winner
+		order by TWP desc;
+
++-----------------------------+----------------------+------------+---------+
+| team                        | no_of_matches_played | toss_count | TWP     |
++-----------------------------+----------------------+------------+---------+
+| Deccan Chargers             |                   75 |         43 | 57.3333 |
+| Kochi Tuskers Kerala        |                   14 |          8 | 57.1429 |
+| Rajasthan Royals            |                  118 |         63 | 53.3898 |
+| Mumbai Indians              |                  140 |         74 | 52.8571 |
+| Kolkata Knight Riders       |                  132 |         69 | 52.2727 |
+| Chennai Super Kings         |                  131 |         66 | 50.3817 |
+| Rising Pune Supergiants     |                   14 |          7 | 50.0000 |
+| Gujarat Lions               |                   16 |          8 | 50.0000 |
+| Sunrisers Hyderabad         |                   62 |         30 | 48.3871 |
+| Delhi Daredevils            |                  133 |         64 | 48.1203 |
+| Kings XI Punjab             |                  134 |         64 | 47.7612 |
+| Royal Challengers Bangalore |                  139 |         61 | 43.8849 |
+| Pune Warriors               |                   46 |         20 | 43.4783 |
++-----------------------------+----------------------+------------+---------+
+
+
+{11} Team with highest no.of wins in a given year:
+
+	mysql> select season, winner, count(winner) as most_wins from matches 
+	       where season = 2008 
+	       group by (winner) 
+	       order by most_wins desc 
+  	       limit 1;
+
++--------+------------------+-----------+
+| season | winner           | most_wins |
++--------+------------------+-----------+
+|   2008 | Rajasthan Royals |        13 |
++--------+------------------+-----------+
+
+
+
+
+
+
+
+
+
+
+
+
+
